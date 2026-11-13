@@ -1,5 +1,5 @@
 # IQR
-The code for our paper ``Invariant quantile regression for heterogeneous environments''.
+The Python code for the paper ``Invariant quantile regression for heterogeneous environments'' by Bo Fu, and Dandan Jiang.
 
 Explanation of files:
 
