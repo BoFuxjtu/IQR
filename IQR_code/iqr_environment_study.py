@@ -22,7 +22,9 @@ import pandas as pd
 from scipy.optimize import minimize, linprog, OptimizeWarning
 from scipy.special import ndtr
 
-SCENARIOS = {'strong': (.2, .8), 'weak': (.45, .55), 'identical': (.5, .5)}
+#SCENARIOS = {'strong': (.2, .8), 'weak': (.45, .55), 'identical': (.5, .5)}
+A1_GRID = np.arange(0.50, 0.80 + 1e-12, 0.05)
+SCENARIOS = {f'a1_{a1:.2f}': (a1, 1.0 - a1) for a1 in A1_GRID}
 TEST_A = (0., -.8)
 NAMES = ['Z', 'W', 'D']
 RULE = 'A fitted slope is selected if and only if its coefficient is nonzero; intercept excluded.'
@@ -144,7 +146,7 @@ def one_rep(job):
         obs = (X > 0) @ BITS; env = np.repeat([0, 1], n); group = 8*env + obs
         if not cfg['primary_only']:
             eills = fit_eills(y, obs, group, n, gamma)
-        for tau in (.5, .9):
+        for tau in (.5, .8):
             h = cfg['h'] or np.sqrt(3*tau*(1-tau)*(gamma if gamma > 0 else 20.)/(2*n))
             q = NormalDist().inv_cdf(tau); truth = np.array([1.+q, 2., q/2., 0.])
             def fit(mask, penalty):
@@ -275,11 +277,11 @@ def plot_study(summary, n, directory):
     styles = [
         ('EILLS',      .5, 'EILLS',                       '#E41A1C', 'D', '-'),
         ('KS-IQR',     .5, r'KS-IQR ($\tau=0.5$)',        '#377EB8', 'o', '--'),
-        ('KS-IQR',     .9, r'KS-IQR ($\tau=0.9$)',        '#A65628', '<', '--'),
+        ('KS-IQR',     .8, r'KS-IQR ($\tau=0.8$)',        '#A65628', '<', '--'),
         ('Pooled-SQR', .5, r'Pooled SQR ($\tau=0.5$)',    '#4DAF4A', 'P', ':'),
-        ('Pooled-SQR', .9, r'Pooled SQR ($\tau=0.9$)',    '#FF7F00', 's', '-.'),
+        ('Pooled-SQR', .8, r'Pooled SQR ($\tau=0.8$)',    '#FF7F00', 's', '-.'),
     ]
-    scenarios = ['identical', 'weak', 'strong']
+    scenarios = list(SCENARIOS.keys())
     a_c = np.array([abs(SCENARIOS[s][0] - SCENARIOS[s][1]) for s in scenarios])
     panels = [('sel_W', r'(a)', 'Average number: $W$'),
               ('sel_D', r'(b)', 'Average number: $D$'),
@@ -302,8 +304,9 @@ def plot_study(summary, n, directory):
                 ax.errorbar(a_c, est['mean'], yerr=est.mcse.fillna(0),
                             color=color, marker=marker, linestyle=line, linewidth=1.5,
                             markersize=5, capsize=2, elinewidth=.85, label=label)
-            ax.set_xlim(-0.04, 0.64)
-            ax.set_xticks(a_c, ['0', '0.1', '0.6'], fontsize=11)
+            ax.set_xlim(-0.03, 0.63)
+            ax.set_xticks(a_c)
+            ax.set_xticklabels([f'{x:.1f}' for x in a_c], fontsize=11)
             ax.set_xlabel(r'$a_c$', fontsize=14)
             ax.tick_params(axis='y', labelsize=11)
             ax.set_ylabel(ylabel, fontsize=14)
@@ -341,7 +344,7 @@ def run_training(args, fit_dir, quick):
                reps=args.reps if args.reps is not None else (2 if quick else 200),
                test_n=args.test_n if args.test_n is not None else (1000 if quick else 10000),
                seed=args.seed, gamma=args.gamma, h=args.h, primary_only=args.primary_only,
-               taus=[.5,.9], test_shifts=list(TEST_A), support_rule=RULE)
+               taus=[.5,.8], test_shifts=list(TEST_A), support_rule=RULE)
     if min(cfg['ns'])<2 or cfg['reps']<1 or cfg['test_n']<2 or cfg['gamma']<0 or (cfg['h'] is not None and cfg['h']<=0):
         raise ValueError('Training needs n>=2, positive reps and bandwidth, test-n>=2 and gamma>=0.')
     (fit_dir/'parts').mkdir(parents=True, exist_ok=True)

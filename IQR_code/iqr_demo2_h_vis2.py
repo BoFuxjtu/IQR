@@ -114,7 +114,7 @@ true_coeff = np.array([3, 2, -0.5] + [0] * 9)
 for i in method_idx:
     ax1.plot(vec_n, np.mean(np.abs(results[:, :, i, 0:3]) > 0, axis=(1,2)) * 3,
 			linestyle=lines[2 * i], marker=markers[2 * i], label=method_name[2 * i], color=colors[2 * i])
-    ax1.plot(vec_n, np.mean(np.abs(results[:, :, i, [3]]) > 0, axis=(1,2)) * 1,
+    ax1.plot(vec_n, np.mean(np.abs(results[:, :, i, 6:9]) > 0, axis=(1,2)) * 3,
 			linestyle=lines[2 * i + 1], marker=markers[2 * i + 1], label=method_name[2 * i + 1], color=colors[2 * i + 1])
 
 #true_coeff = np.reshape(true_coeff, (1, 1, dim_x))
@@ -133,7 +133,7 @@ plt.xticks(fontsize=12)
 plt.yticks(fontsize=12)
 ax1.set_xlabel('$n$')
 plt.ylim((-0.2, 3.2))
-ax1.set_ylabel('number of selected variables')
+ax1.set_ylabel('Average number of selected variables')
 
 ax1.legend(loc='best')
 ax1.legend(fontsize=10)
